@@ -932,6 +932,9 @@ const modelDefinitions = {
   ]) },
   "villager6.jem": { models: rootVillagerModels("unreachable", "diq") },
   "wandering_trader.jem": { models: rootVillagerModels("wandering_trader_news", "dix") },
+  // Minimal attached base keeps EMF configurations that require a base model compatible
+  // with the numbered Wooly variants without replacing vanilla sheep geometry.
+  "sheep.jem": { models: [{ part: "root", attach: true }] },
   "sheep2.jem": { models: rootSheepModels("wooly", "diw") },
   "sheep3.jem": { models: rootSheepModels("wooly", "diw", true) },
   "sheep_wool_undercoat2.jem": { models: vanillaSheepSuppressors("wooly_undercoat") },

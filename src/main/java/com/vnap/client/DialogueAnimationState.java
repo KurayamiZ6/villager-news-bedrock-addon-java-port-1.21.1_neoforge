@@ -9,8 +9,8 @@ import com.vnap.entity.VillagerNewsData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.WanderingTrader;
 import traben.entity_model_features.EMFAnimationApi;
 import traben.entity_model_features.utils.EMFEntity;
 
@@ -117,10 +117,10 @@ public final class DialogueAnimationState {
 		}
 		long now = System.nanoTime();
 		ACTIVE.entrySet().removeIf(entry -> now > entry.getValue().endNanos());
-		IDLE_STATES.keySet().removeIf(id -> minecraft.level.getEntity(id) == null);
-		LOOK_STATES.keySet().removeIf(id -> minecraft.level.getEntity(id) == null);
-		TURN_STATES.keySet().removeIf(id -> minecraft.level.getEntity(id) == null);
-		LOCOMOTION_STATES.keySet().removeIf(id -> minecraft.level.getEntity(id) == null);
+		IDLE_STATES.keySet().removeIf(id -> ClientEntityLookup.find(minecraft, id) == null);
+		LOOK_STATES.keySet().removeIf(id -> ClientEntityLookup.find(minecraft, id) == null);
+		TURN_STATES.keySet().removeIf(id -> ClientEntityLookup.find(minecraft, id) == null);
+		LOCOMOTION_STATES.keySet().removeIf(id -> ClientEntityLookup.find(minecraft, id) == null);
 	}
 
 	static void clear() {
@@ -131,7 +131,7 @@ public final class DialogueAnimationState {
 		LOCOMOTION_STATES.clear();
 	}
 
-	static void start(DialogueAnimationPayload payload) {
+	public static void start(DialogueAnimationPayload payload) {
 		if (payload.groupId().isEmpty()) {
 			ActiveDialogue previous = ACTIVE.get(payload.entityId());
 			if (previous == null || previous.poseSnapshot().isEmpty()) {
@@ -223,7 +223,7 @@ public final class DialogueAnimationState {
 		if (!(emfEntity instanceof LivingEntity entity)
 				|| !(entity instanceof Villager) && !(entity instanceof WanderingTrader)) return fallback;
 		UUID id = entity.getUUID();
-		float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
+		float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
 		float age = emfEntity.emf$age() + partialTick;
 		float speed = entity.walkAnimation.speed(partialTick);
 		IdleState idle = IDLE_STATES.computeIfAbsent(id, ignored -> new IdleState());
@@ -262,7 +262,7 @@ public final class DialogueAnimationState {
 		if (!(emfEntity instanceof LivingEntity entity)
 				|| !(entity instanceof Villager) && !(entity instanceof WanderingTrader)
 				|| entity.isSleeping()) return 0.0F;
-		float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
+		float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
 		float age = emfEntity.emf$age() + partialTick;
 		LookState state = LOOK_STATES.computeIfAbsent(entity.getUUID(), ignored -> new LookState());
 		state.update(age, Mth.clamp(entity.getXRot(), -90.0F, 90.0F),
@@ -271,7 +271,7 @@ public final class DialogueAnimationState {
 	}
 
 	private static float animationTick(EMFEntity entity) {
-		return entity.emf$age() + Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
+		return entity.emf$age() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
 	}
 
 	private static MouthFrame mouthFrame() {

@@ -1,86 +1,81 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
-	id 'maven-publish'
+    id 'java-library'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.116'
 }
 
+version = mod_version
+group = mod_group_id
+base { archivesName = mod_id }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
 repositories {
-	exclusiveContent {
-		forRepository {
-			maven {
-				name = "Modrinth"
-				url = "https://api.modrinth.com/maven"
-			}
-		}
-		filter {
-			includeGroup "maven.modrinth"
-		}
-	}
-	exclusiveContent {
-		forRepository {
-			maven {
-				name = "TerraformersMC"
-				url = "https://maven.terraformersmc.com/releases/"
-			}
-		}
-		filter {
-			includeGroup "com.terraformersmc"
-		}
-	}
+    mavenCentral()
+    maven {
+        name = 'CurseMaven'
+        url = 'https://www.cursemaven.com'
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+neoForge {
+    version = neo_version
+    parchment {
+        minecraftVersion = parchment_minecraft_version
+        mappingsVersion = parchment_mappings_version
+    }
+    runs {
+        configureEach {
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        client { client() }
+        server { server(); programArgument '--nogui' }
+    }
+    mods {
+        "${mod_id}" { sourceSet sourceSets.main }
+    }
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-
-	compileOnly "maven.modrinth:4I1XuqiY:${project.emf_version}"
-	compileOnly "maven.modrinth:BVzZfTc1:${project.etf_version}"
-	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+    implementation "net.neoforged:neoforge:${neo_version}"
+    compileOnly "maven.modrinth:4I1XuqiY:gEOHNhtN"
+    compileOnly "maven.modrinth:BVzZfTc1:uGBt1h06"
+    compileOnly "curse.maven:entity-sound-features-1060324:7933712"
 }
 
 processResources {
-	def version = project.version
-	def dialogueTestCommand = project.findProperty("dialogue_test_command")?.toString()?.toBoolean() ?: false
-	inputs.property "version", version
-	inputs.property "dialogue_test_command", dialogueTestCommand
-
-	filesMatching("fabric.mod.json") {
-		expand "version": version
-	}
-
-	filesMatching("villager-news-addon-port-build.properties") {
-		expand "dialogue_test_command": dialogueTestCommand
-	}
+    var props = [
+        mod_id: mod_id,
+        resource_namespace: resource_namespace,
+        mod_name: mod_name,
+        mod_version: mod_version,
+        mod_license: mod_license,
+        mod_authors: mod_authors,
+        mod_description: mod_description,
+        minecraft_version: minecraft_version,
+        neo_version: neo_version,
+        dialogue_test_command: (findProperty('dialogue_test_command') ?: 'false').toString().trim()
+    ]
+    inputs.properties props
+    filesMatching('META-INF/neoforge.mods.toml') { expand props }
+    exclude 'fabric.mod.json'
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+    options.encoding = 'UTF-8'
+    options.release = 21
+    // Large Fabric -> NeoForge ports can emit hundreds of cascading javac errors.
+    options.compilerArgs += ['-Xmaxerrs', '2000', '-Xmaxwarns', '2000']
 }
 
-java {
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
-}
-
-jar {
-	def projectName = project.name
-	inputs.property "projectName", projectName
-
-	from("LICENSE") {
-		rename { "${it}_$projectName"}
-	}
-}
-
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			from components.java
-		}
-	}
-
-	repositories {
-	}
-}
+idea { module { downloadSources = true; downloadJavadoc = true } }

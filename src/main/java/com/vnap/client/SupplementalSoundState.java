@@ -15,7 +15,7 @@ public final class SupplementalSoundState {
 	public static void play(HurtEffectPayload payload) {
 		Minecraft minecraft = Minecraft.getInstance();
 		if (minecraft.level == null) return;
-		Entity entity = minecraft.level.getEntity(payload.entityId());
+		Entity entity = ClientEntityLookup.find(minecraft, payload.entityId());
 		SoundEvent sound = SupplementalSoundCatalog.byId(payload.effectId());
 		if (entity == null || sound == null) return;
 		minecraft.getSoundManager().play(new EntityBoundSoundInstance(

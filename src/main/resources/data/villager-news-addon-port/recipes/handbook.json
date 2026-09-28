@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:paper" },
+    { "item": "minecraft:paper" },
+    { "item": "minecraft:paper" }
+  ],
+  "result": {
+    "item": "villager-news-addon-port:handbook",
+    "count": 1
+  }
+}

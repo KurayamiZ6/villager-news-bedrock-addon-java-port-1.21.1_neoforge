@@ -1,9 +1,10 @@
 package com.vnap.sound;
 
 import com.vnap.VillagerNewsAddonPort;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
 import java.util.LinkedHashMap;
@@ -18,15 +19,19 @@ public final class SupplementalSoundCatalog {
 		"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v"
 	);
 	private static final Map<String, SoundEvent> REGISTERED = new LinkedHashMap<>();
+	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, VillagerNewsAddonPort.RESOURCE_NAMESPACE);
 
 	private SupplementalSoundCatalog() {
 	}
 
-	public static void register() {
+	public static void register(IEventBus modEventBus) {
 		for (String effect : EFFECTS) {
-			Identifier id = VillagerNewsAddonPort.id("effect." + effect);
-			REGISTERED.put(effect, Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id)));
+			ResourceLocation id = VillagerNewsAddonPort.id("effect." + effect);
+			SoundEvent sound = SoundEvent.createVariableRangeEvent(id);
+			REGISTERED.put(effect, sound);
+			SOUNDS.register(id.getPath(), () -> sound);
 		}
+		SOUNDS.register(modEventBus);
 	}
 
 	public static String chooseHurtEffect(boolean baby) {

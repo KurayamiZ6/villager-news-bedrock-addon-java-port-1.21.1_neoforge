@@ -2,7 +2,7 @@ package com.vnap.client;
 
 import com.vnap.config.VillagerNewsSettings;
 import com.vnap.network.VillagerNewsSettingsPayload;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.client.Minecraft;
 
 public final class VillagerNewsSettingsState {
@@ -75,8 +75,8 @@ public final class VillagerNewsSettingsState {
 			VillagerNewsSettings.update(chattiness, rareVoicelines, spawnSpecialVillagers);
 			return;
 		}
-		if (Minecraft.getInstance().getConnection() != null && ClientPlayNetworking.canSend(VillagerNewsSettingsPayload.TYPE)) {
-			ClientPlayNetworking.send(new VillagerNewsSettingsPayload(chattiness, rareVoicelines, spawnSpecialVillagers, false));
+		if (Minecraft.getInstance().getConnection() != null) {
+			PacketDistributor.sendToServer(new VillagerNewsSettingsPayload(chattiness, rareVoicelines, spawnSpecialVillagers, false));
 		}
 	}
 

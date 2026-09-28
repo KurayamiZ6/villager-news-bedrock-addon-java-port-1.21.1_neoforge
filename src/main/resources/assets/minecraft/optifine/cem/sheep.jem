@@ -1,0 +1,9 @@
+{
+  "textureSize": [64, 32],
+  "models": [
+    {
+      "part": "root",
+      "attach": true
+    }
+  ]
+}

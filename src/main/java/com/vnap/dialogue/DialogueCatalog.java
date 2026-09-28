@@ -4,9 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vnap.VillagerNewsAddonPort;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
 import java.io.IOException;
@@ -25,11 +26,12 @@ public final class DialogueCatalog {
 	private static final String CATALOG_PATH = "/assets/villager-news-addon-port/dialogues.json";
 	private static final Map<String, DialogueGroup> GROUPS = new LinkedHashMap<>();
 	private static final Map<String, List<DialogueGroup>> TITLES = new LinkedHashMap<>();
+	private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, VillagerNewsAddonPort.RESOURCE_NAMESPACE);
 
 	private DialogueCatalog() {
 	}
 
-	public static void register() {
+	public static void register(IEventBus modEventBus) {
 		try (InputStream stream = DialogueCatalog.class.getResourceAsStream(CATALOG_PATH)) {
 			if (stream == null) {
 				throw new IOException("Missing " + CATALOG_PATH);
@@ -51,12 +53,9 @@ public final class DialogueCatalog {
 							subtitleValue.get("key").getAsString()
 						));
 					}
-					Identifier soundId = VillagerNewsAddonPort.id("dialogue." + groupId + "." + index);
-					SoundEvent sound = Registry.register(
-						BuiltInRegistries.SOUND_EVENT,
-						soundId,
-						SoundEvent.createVariableRangeEvent(soundId)
-					);
+					ResourceLocation soundId = VillagerNewsAddonPort.id("dialogue." + groupId + "." + index);
+					SoundEvent sound = SoundEvent.createVariableRangeEvent(soundId);
+					SOUNDS.register(soundId.getPath(), () -> sound);
 					variants.add(new DialogueVariant(
 						index,
 						variantValue.get("duration").getAsDouble(),
@@ -78,6 +77,7 @@ public final class DialogueCatalog {
 				GROUPS.put(groupId, group);
 				if (!group.title().isBlank()) TITLES.computeIfAbsent(group.title(), ignored -> new ArrayList<>()).add(group);
 			}
+			SOUNDS.register(modEventBus);
 			VillagerNewsAddonPort.LOGGER.info("Registered {} contextual dialogue groups with {} synchronized variants", GROUPS.size(), variantCount);
 		} catch (IOException | RuntimeException exception) {
 			throw new IllegalStateException("Could not load Villager News dialogue catalog", exception);

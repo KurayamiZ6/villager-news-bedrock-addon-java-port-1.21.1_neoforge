@@ -6,9 +6,10 @@ import com.vnap.dialogue.ContextualDialogueController;
 import com.vnap.dialogue.DialogueCatalog;
 import com.vnap.entity.VillagerNewsData;
 import com.vnap.item.VillagerNewsItems;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -18,20 +19,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.animal.bee.Bee;
-import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.npc.villager.Villager;
-import net.minecraft.world.entity.npc.villager.VillagerProfession;
-import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -127,16 +126,16 @@ public final class DialogueTestCommand {
 	}
 
 	public static void register() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> dispatcher.register(
+		NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> event.getDispatcher().register(
 			Commands.literal("dialoguetest")
-				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+				.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(Commands.literal("continuous")
 					.executes(context -> runContinuous(context.getSource())))
 				.then(Commands.argument("group", IntegerArgumentType.integer(1, DialogueCatalog.groups().size()))
 					.executes(context -> runSingle(context.getSource(), IntegerArgumentType.getInteger(context, "group"))))
 		));
-		ServerTickEvents.END_SERVER_TICK.register(DialogueTestCommand::tick);
-		ServerLifecycleEvents.SERVER_STOPPING.register(server -> clear());
+		NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> tick(event.getServer()));
+		NeoForge.EVENT_BUS.addListener((ServerStoppingEvent event) -> clear());
 	}
 
 	private static int runSingle(CommandSourceStack source, int number) throws CommandSyntaxException {
@@ -168,7 +167,7 @@ public final class DialogueTestCommand {
 			return false;
 		}
 		DialogueCatalog.DialogueVariant variant = group.variants().get(variantOffset);
-		ServerLevel level = player.level();
+		ServerLevel level = player.serverLevel();
 		String title = scenarioTitle(group);
 		Vec3 forward = horizontalDirection(player);
 		Vec3 side = new Vec3(-forward.z, 0.0, forward.x);
@@ -279,11 +278,11 @@ public final class DialogueTestCommand {
 	}
 
 	private static LivingEntity createSpeaker(ServerLevel level, DialogueCatalog.DialogueGroup group) {
-		if (isCosmeticRecipientDialogue(group.id())) return EntityTypes.VILLAGER.create(level, EntitySpawnReason.COMMAND);
+		if (isCosmeticRecipientDialogue(group.id())) return EntityType.VILLAGER.create(level);
 		return switch (group.speaker()) {
-			case "wooly" -> EntityTypes.SHEEP.create(level, EntitySpawnReason.COMMAND);
-			case "wandering_trader" -> EntityTypes.WANDERING_TRADER.create(level, EntitySpawnReason.COMMAND);
-			default -> EntityTypes.VILLAGER.create(level, EntitySpawnReason.COMMAND);
+			case "wooly" -> EntityType.SHEEP.create(level);
+			case "wandering_trader" -> EntityType.WANDERING_TRADER.create(level);
+			default -> EntityType.VILLAGER.create(level);
 		};
 	}
 
@@ -310,7 +309,7 @@ public final class DialogueTestCommand {
 			data.vnap$setSignMessage(group.id().equals("vqlrqf") ? 0 : -1);
 			setProfession(level, villager, group.speaker().equals("villager") ? title : "");
 			if (group.id().equals("adhvqz")) villager.setItemSlot(EquipmentSlot.MAINHAND,
-				new ItemStack(VillagerNewsItems.MICROPHONE));
+				new ItemStack(VillagerNewsItems.MICROPHONE.get()));
 		}
 		if (speaker instanceof Sheep sheep) {
 			sheep.setCustomName(Component.literal("Wooly The Sheep"));
@@ -321,7 +320,7 @@ public final class DialogueTestCommand {
 			trader.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 12000, 0, false, false));
 		}
 		if (group.id().equals("onindz")) speaker.addEffect(new MobEffectInstance(MobEffects.POISON, 12000));
-		if (group.id().equals("xemyaj")) speaker.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 12000));
+		if (group.id().equals("xemyaj")) speaker.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 12000));
 		if (group.id().equals("yebifs")) speaker.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 12000));
 		if (group.id().equals("etkxko")) speaker.setRemainingFireTicks(12000);
 		if (group.id().equals("igebly")) speaker.setTicksFrozen(speaker.getTicksRequiredToFreeze());
@@ -465,8 +464,8 @@ public final class DialogueTestCommand {
 				? VillagerProfession.FARMER : VillagerProfession.NONE;
 		};
 		int levelNumber = title.equals("Reach Master Level") ? 5 : title.equals("Level Up") ? 2 : 1;
-		villager.setVillagerData(villager.getVillagerData().withProfession(level.registryAccess(), profession)
-			.withLevel(levelNumber));
+		villager.setVillagerData(villager.getVillagerData().setProfession(profession)
+			.setLevel(levelNumber));
 	}
 
 	private static boolean speakerHasNoNose(String id, String title) {
@@ -518,16 +517,16 @@ public final class DialogueTestCommand {
 
 	private static Entity createEntity(ServerLevel level, String path) {
 		EntityType<?> type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
-			.getOptional(net.minecraft.resources.Identifier.fromNamespaceAndPath("minecraft", path)).orElse(null);
-		return type == null ? null : type.create(level, EntitySpawnReason.COMMAND);
+			.getOptional(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", path)).orElse(null);
+		return type == null ? null : type.create(level);
 	}
 
 	private static void prepareEntity(Entity entity, Vec3 position) {
 		entity.addTag(ContextualDialogueController.DIALOGUE_TEST_TAG);
-		entity.setPermanentlyInvulnerable(true);
+		entity.setInvulnerable(true);
 		entity.setSilent(true);
 		entity.setNoGravity(!(entity instanceof LivingEntity));
-		entity.snapTo(position);
+		entity.moveTo(position.x, position.y, position.z, entity.getYRot(), entity.getXRot());
 		if (entity instanceof Mob mob) {
 			mob.setNoAi(true);
 			mob.setPersistenceRequired();

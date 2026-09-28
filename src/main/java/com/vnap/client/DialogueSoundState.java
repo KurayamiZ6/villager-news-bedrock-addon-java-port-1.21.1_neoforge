@@ -38,7 +38,7 @@ public final class DialogueSoundState {
 		if (group == null) return true;
 		DialogueCatalog.DialogueVariant variant = group.variants().stream()
 			.filter(candidate -> candidate.index() == payload.variantIndex()).findFirst().orElse(null);
-		Entity entity = minecraft.level.getEntity(payload.entityId());
+		Entity entity = ClientEntityLookup.find(minecraft, payload.entityId());
 		if (variant == null) return true;
 		if (entity == null) return false;
 		boolean followsEntity = entity.isAlive() && !entity.isSilent()
@@ -65,7 +65,7 @@ public final class DialogueSoundState {
 		Iterator<Map.Entry<UUID, ActiveSound>> iterator = ACTIVE.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry<UUID, ActiveSound> entry = iterator.next();
-			Entity entity = minecraft.level.getEntity(entry.getKey());
+			Entity entity = ClientEntityLookup.find(minecraft, entry.getKey());
 			if (now < entry.getValue().endNanos()
 				&& (!entry.getValue().followsEntity() || entity != null && entity.isAlive())) continue;
 			minecraft.getSoundManager().stop(entry.getValue().instance());

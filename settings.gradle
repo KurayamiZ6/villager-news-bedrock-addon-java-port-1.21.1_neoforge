@@ -1,12 +1,8 @@
 pluginManagement {
-	repositories {
-		maven {
-			name = 'Fabric'
-			url = 'https://maven.fabricmc.net/'
-		}
-		mavenCentral()
-		gradlePluginPortal()
-	}
+    repositories {
+        maven { url = 'https://maven.neoforged.net/releases' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
 }
-
-rootProject.name = 'villager-news-addon-port'
+rootProject.name = 'villager-news-addon-port-neoforge-1.21.1'

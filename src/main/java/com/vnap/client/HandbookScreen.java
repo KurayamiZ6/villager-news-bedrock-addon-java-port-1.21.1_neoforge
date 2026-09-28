@@ -363,7 +363,7 @@ public final class HandbookScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		minecraft.setScreenAndShow(parent);
+		minecraft.setScreen(parent);
 	}
 
 	private static String clean(String value) {

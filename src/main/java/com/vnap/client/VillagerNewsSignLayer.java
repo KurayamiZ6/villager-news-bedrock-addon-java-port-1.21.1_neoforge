@@ -4,59 +4,68 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.vnap.VillagerNewsAddonPort;
-import net.minecraft.client.model.npc.VillagerModel;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import com.vnap.entity.VillagerNewsData;
+import com.vnap.mixin.client.EMFModelPartAccessor;
+import net.minecraft.client.model.VillagerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.VillagerRenderState;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.npc.Villager;
 import traben.entity_model_features.models.IEMFModel;
-import traben.entity_model_features.models.animation.EMFAttachment;
+import traben.entity_model_features.models.parts.EMFModelPart;
 
 import java.util.function.Consumer;
 
-public final class VillagerNewsSignLayer extends RenderLayer<VillagerRenderState, VillagerModel> {
-	private static final Identifier[] BOARD_TEXTURES = {
+public final class VillagerNewsSignLayer extends RenderLayer<Villager, VillagerModel<Villager>> {
+	private static final ResourceLocation[] BOARD_TEXTURES = {
 		minecraft("oak"), minecraft("spruce"), minecraft("birch"), minecraft("jungle"),
 		minecraft("acacia"), minecraft("dark_oak"), minecraft("mangrove"), minecraft("cherry"),
-		minecraft("pale_oak"), minecraft("bamboo"), minecraft("crimson"), minecraft("warped")
+		minecraft("bamboo"), minecraft("crimson"), minecraft("warped")
 	};
-	private static final Identifier TEXT_TEXTURE = Identifier.fromNamespaceAndPath(
+	private static final ResourceLocation TEXT_TEXTURE = ResourceLocation.fromNamespaceAndPath(
 		VillagerNewsAddonPort.MOD_ID, "textures/entity/sign_text.png"
 	);
-	public VillagerNewsSignLayer(RenderLayerParent<VillagerRenderState, VillagerModel> renderer) {
+
+	public VillagerNewsSignLayer(RenderLayerParent<Villager, VillagerModel<Villager>> renderer) {
 		super(renderer);
 	}
 
 	@Override
-	public void submit(PoseStack poseStack, SubmitNodeCollector collector, int packedLight,
-			VillagerRenderState state, float yRot, float xRot) {
-		VillagerNewsRenderState sign = (VillagerNewsRenderState) state;
+	public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Villager villager,
+			float limbAngle, float limbDistance, float ageInTicks, float netHeadYaw, float headPitch, float partialTick) {
+		VillagerNewsData sign = (VillagerNewsData) villager;
 		int type = sign.vnap$signType();
 		int message = sign.vnap$signMessage();
-		if (state.isInvisible || state.isBaby || type < 0 || type >= BOARD_TEXTURES.length || message < 0 || message >= 87) return;
+		if (villager.isInvisible() || villager.isBaby() || type < 0 || type >= BOARD_TEXTURES.length || message < 0 || message >= 87) return;
+
 		poseStack.pushPose();
-		Consumer<PoseStack> positioner = getParentModel() instanceof IEMFModel emfModel
-			? emfModel.emf$getEMFRootModel().getPositionerForAttachment(EMFAttachment.Type.VILLAGER)
-			: null;
+		Consumer<PoseStack> positioner = null;
+		if (getParentModel() instanceof IEMFModel emfModel) {
+			EMFModelPart root = emfModel.emf$getEMFRootModel();
+			if (root instanceof EMFModelPartAccessor accessor) {
+				positioner = accessor.vnap$getAttachmentPositioner(
+					traben.entity_model_features.models.animation.EMFAttachment.Type.VILLAGER);
+			}
+		}
 		if (positioner == null) {
-			getParentModel().translateToArms(state, poseStack);
+			getParentModel().root().getChild("arms").translateAndRotate(poseStack);
 		} else {
 			positioner.accept(poseStack);
 		}
 		poseStack.translate(0.0F, 5.75F / 16.0F, -1.75F / 16.0F);
-		poseStack.rotateDegrees(Axis.XP, 42.97F);
-		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(BOARD_TEXTURES[type]),
-			(pose, vertices) -> drawBoard(pose, vertices, packedLight));
-		collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TEXT_TEXTURE),
-			(pose, vertices) -> drawText(pose, vertices, packedLight, message));
+		poseStack.mulPose(Axis.XP.rotationDegrees(42.97F));
+		VertexConsumer board = buffer.getBuffer(RenderType.entityCutout(BOARD_TEXTURES[type]));
+		drawBoard(poseStack.last(), board, packedLight);
+		VertexConsumer text = buffer.getBuffer(RenderType.entityCutout(TEXT_TEXTURE));
+		drawText(poseStack.last(), text, packedLight, message);
 		poseStack.popPose();
 	}
 
-	private static Identifier minecraft(String wood) {
-		return Identifier.withDefaultNamespace("textures/block/" + wood + "_sign.png");
+	private static ResourceLocation minecraft(String wood) {
+		return ResourceLocation.withDefaultNamespace("textures/entity/signs/" + wood + ".png");
 	}
 
 	private static void drawBoard(PoseStack.Pose pose, VertexConsumer vertices, int light) {

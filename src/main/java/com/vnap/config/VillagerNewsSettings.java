@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vnap.VillagerNewsAddonPort;
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +14,7 @@ import java.nio.file.Path;
 
 public final class VillagerNewsSettings {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("villager-news-addon-port.json");
+	private static final Path PATH = FMLPaths.CONFIGDIR.get().resolve("villager-news-addon-port.json");
 	private static int chattiness = 2;
 	private static int rareVoicelines = 1;
 	private static boolean spawnSpecialVillagers = true;
