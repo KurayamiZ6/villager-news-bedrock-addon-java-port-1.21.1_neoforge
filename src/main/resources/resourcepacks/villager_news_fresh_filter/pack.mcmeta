@@ -1,0 +1,18 @@
+{
+  "pack": {
+    "pack_format": 34,
+    "description": "Villager News — blocks Fresh Animations villager resources"
+  },
+  "filter": {
+    "block": [
+      { "namespace": "minecraft", "path": "optifine/cem/villager.jem" },
+      { "namespace": "minecraft", "path": "optifine/cem/villager.properties" },
+      { "namespace": "minecraft", "path": "optifine/cem/villager_animations.jpm" },
+      { "namespace": "minecraft", "path": "optifine/cem/villager2.jem" },
+      { "namespace": "minecraft", "path": "optifine/cem/villager2_animations.jpm" },
+      { "namespace": "minecraft", "path": "optifine/cem/villager_baby.jem" },
+      { "namespace": "minecraft", "path": "optifine/cem/villager_baby.properties" },
+      { "namespace": "minecraft", "path": "optifine/cem/villager_baby2.jem" }
+    ]
+  }
+}

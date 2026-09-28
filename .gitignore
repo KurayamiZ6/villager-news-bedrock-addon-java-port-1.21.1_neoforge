@@ -10,7 +10,7 @@ run/
 logs/
 saves/
 downloads/
-resourcepacks/
+/resourcepacks/
 eula.txt
 usercache.json
 command_history.txt
