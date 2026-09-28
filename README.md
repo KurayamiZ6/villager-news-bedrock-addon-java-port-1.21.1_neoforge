@@ -1,6 +1,6 @@
 # Villager News Addon Port — NeoForge 1.21.1
 
-An unofficial NeoForge port of the **Villager News Addon Port** for Minecraft Java Edition. This workspace targets **Minecraft 1.21.1**, **NeoForge 21.1.x**, and **Java 21** while preserving the original Villager News models, textures, animations, audio, dialogue data, and contextual behavior where the 1.21.1 API permits it. Made entirely with Chat GPT.
+An unofficial NeoForge port of the **Villager News Addon Port** for Minecraft Java Edition. This workspace targets **Minecraft 1.21.1**, **NeoForge 21.1.x**, and **Java 21** while preserving the original Villager News models, textures, animations, audio, dialogue data, and contextual behavior where the 1.21.1 API permits it. Made entirely with AI (Chat GPT).
 
 Current source version: **1.3.6**.
 
@@ -67,7 +67,7 @@ Craft the Villager News Handbook from three pieces of paper. It includes the add
 
 Shear an adult villager to remove its nose. Interact with that villager while holding the nose to return it. The Mayor, Testificate Man, Villager #5, and Villager #9 sell their matching cosmetics. Cosmetics can be given to ordinary villagers and removed again with shears.
 
-Minecraft 1.21.1 uses the classic `models/item` item-model format. The source still retains the original held/worn model assets for reference, but the newer `assets/<modid>/items/\\\*.json` display-context selector format from Minecraft 26.x is not used by the 1.21.1 runtime.
+Minecraft 1.21.1 uses the classic `models/item` item-model format. The source still retains the original held/worn model assets for reference, but the newer `assets/<modid>/items/\\\\\\\*.json` display-context selector format from Minecraft 26.x is not used by the 1.21.1 runtime.
 
 ## Dialogue
 
@@ -80,7 +80,7 @@ The server chooses the exact voice variant and broadcasts its matching animation
 On Windows:
 
 ```powershell
-.\\\\gradlew.bat build
+.\\\\\\\\gradlew.bat build
 ```
 
 On Linux or macOS:
@@ -91,7 +91,7 @@ On Linux or macOS:
 
 The distributable jar is written to `build/libs`.
 
-To include the operator-only dialogue test command in a development build, set `dialogue\\\_test\\\_command=true` in `src/main/resources/villager-news-addon-port-build.properties` (or the corresponding generated build setting) before building. Use `/dialoguetest <1-523>` in game to spawn the matching speaker and subject, play the selected dialogue variant, and remove the test actors afterwards. Use `/dialoguetest continuous` to run all groups in order.
+To include the operator-only dialogue test command in a development build, set `dialogue\\\\\\\_test\\\\\\\_command=true` in `src/main/resources/villager-news-addon-port-build.properties` (or the corresponding generated build setting) before building. Use `/dialoguetest <1-523>` in game to spawn the matching speaker and subject, play the selected dialogue variant, and remove the test actors afterwards. Use `/dialoguetest continuous` to run all groups in order.
 
 Run the asset and dialogue verification with:
 
@@ -105,7 +105,7 @@ The port deliberately does not try to emulate Minecraft 26.x's submitted-render 
 
 The 26.3 Pale Oak sign is unavailable in Minecraft 1.21.1. Sign serialization therefore uses an explicit schema marker and handles legacy 26.3 sign indices when loading old data. The active 1.21.1 sign palette contains 11 supported standing-sign types.
 
-Likewise, the 26.3-specific `SULFUR\\\_CUBE\\\_HOT` damage type does not exist in 1.21.1. Magma-cube damage is handled through the attacker/direct entity type instead.
+Likewise, the 26.3-specific `SULFUR\\\\\\\_CUBE\\\\\\\_HOT` damage type does not exist in 1.21.1. Magma-cube damage is handled through the attacker/direct entity type instead.
 
 ## Credits
 
