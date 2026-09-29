@@ -67,7 +67,7 @@ Craft the Villager News Handbook from three pieces of paper. It includes the add
 
 Shear an adult villager to remove its nose. Interact with that villager while holding the nose to return it. The Mayor, Testificate Man, Villager #5, and Villager #9 sell their matching cosmetics. Cosmetics can be given to ordinary villagers and removed again with shears.
 
-Minecraft 1.21.1 uses the classic `models/item` item-model format. The source still retains the original held/worn model assets for reference, but the newer `assets/<modid>/items/\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*.json` display-context selector format from Minecraft 26.x is not used by the 1.21.1 runtime.
+Minecraft 1.21.1 uses the classic `models/item` item-model format. The source still retains the original held/worn model assets for reference, but the newer `assets/<modid>/items/\*.json` display-context selector format from Minecraft 26.x is not used by the 1.21.1 runtime.
 
 ## Dialogue
 
@@ -95,27 +95,17 @@ On Linux or macOS:
 
 ```./gradlew build
 
-```
-
 
 
 The distributable jar is written to build/libs.
 
 
 
-To include the operator-only dialogue test command in a development build, set
-
-dialogue\_test\_command=true in
-
-src/main/resources/villager-news-addon-port-build.properties
-
-(or the corresponding generated build setting) before building.
+To include the operator-only dialogue test command in a development build, setdialogue\_test\_command=true in src/main/resources/villager-news-addon-port-build.properties(or the corresponding generated build setting) before building.
 
 
 
-Use /dialoguetest <1-523> in game to spawn the matching speaker and subject,
-
-play the selected dialogue variant, and remove the test actors afterwards.
+Use /dialoguetest <1-523> in game to spawn the matching speaker and subject, play the selected dialogue variant, and remove the test actors afterwards.
 
 
 
@@ -128,8 +118,6 @@ Run the asset and dialogue verification with:
 
 
 ```node tools/verify-port.mjs
-
-```
 
 ## Porting notes
 
