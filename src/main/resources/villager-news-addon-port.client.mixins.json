@@ -3,6 +3,7 @@
   "package": "com.vnap.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "AgeableListModelMixin",
     "EMFModelPartMixin",
     "EMFModelPartAccessor",
     "VillagerRendererMixin",
