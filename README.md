@@ -83,7 +83,7 @@ On Windows:
 
 ```bat
 
-.\\gradlew.bat build
+.\\gradlew.bat build```
 
 
 
@@ -91,7 +91,7 @@ On Linux or macOS:
 
 
 
-./gradlew build
+```./gradlew build```
 
 
 
@@ -123,7 +123,7 @@ Run the asset and dialogue verification with:
 
 
 
-node tools/verify-port.mjs
+```node tools/verify-port.mjs```
 
 ## Porting notes
 
